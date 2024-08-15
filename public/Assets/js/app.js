@@ -204,7 +204,9 @@ var AppProcess = (function () {
         urls: "stun:stun.l.google.com:19302",
       },
       {
-        urls: "stun:stun1.l.google.com:19302",
+        urls: "turn:128.199.213.61:3478",
+        username: "shazeedul",
+        credential: "321456",
       },
     ],
   };

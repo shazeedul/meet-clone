@@ -118,20 +118,20 @@ app.use(fileUpload());
 app.post("/attachimg", function (req, res) {
   var data = req.body;
   var imageFile = req.files.zipfile;
-  console.log(imageFile);
+  if (!imageFile) {
+    return res.status(400).send("No file was uploaded.");
+  }
   var dir = "public/attachment/" + data.meeting_id + "/";
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir);
+    fs.mkdirSync(dir, { recursive: true });
   }
 
-  imageFile.mv(
-    "public/attachment/" + data.meeting_id + "/" + imageFile.name,
-    function (error) {
-      if (error) {
-        console.log("couldn't upload the image file , error: ", error);
-      } else {
-        console.log("Image file successfully uploaded");
-      }
+  imageFile.mv(dir + imageFile.name, function (error) {
+    if (error) {
+      console.error("Could not upload the image file, error: ", error);
+      return res.status(500).send("File upload failed.");
     }
-  );
+    console.log("Image file successfully uploaded");
+    res.send("File uploaded successfully.");
+  });
 });

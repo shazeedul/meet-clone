@@ -115,9 +115,9 @@ io.on("connection", (socket) => {
 });
 
 app.use(fileUpload());
-app.post("/attachimg", function (req, res) {
+app.post("/attaching", function (req, res) {
   var data = req.body;
-  var imageFile = req.files.zipfile;
+  var imageFile = req.files.zipFile;
   if (!imageFile) {
     return res.status(400).send("No file was uploaded.");
   }

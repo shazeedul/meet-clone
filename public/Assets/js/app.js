@@ -1,27 +1,42 @@
+/** ---------- App Process ---------- */
 var AppProcess = (function () {
-  var peers_connection_ids = [];
-  var peers_connection = [];
-  var remote_vid_stream = [];
-  var remote_aud_stream = [];
-  var local_div;
-  var serverProcess;
-  var audio;
-  var isAudioMute = true;
-  var rtp_aud_senders = [];
-  var video_states = {
-    None: 0,
-    Camera: 1,
-    ScreenShare: 2,
+  var peers_connection_ids = [],
+    peers_connection = [],
+    remote_vid_stream = [],
+    remote_aud_stream = [],
+    local_div,
+    serverProcess,
+    audio,
+    isAudioMute = true,
+    rtp_aud_senders = [],
+    video_states = {
+      None: 0,
+      Camera: 1,
+      ScreenShare: 2,
+    };
+  var video_st = video_states.None,
+    videoCamTrack,
+    rtp_vid_senders = [];
+  var iceConfiguration = {
+    iceServers: [
+      {
+        urls: "stun:stun.l.google.com:19302",
+      },
+      {
+        urls: "turn:128.199.213.61:3478",
+        username: "shazeedul",
+        credential: "321456",
+      },
+    ],
   };
-  var video_st = video_states.None;
-  var videoCamTrack;
-  var rtp_vid_senders = [];
-  async function _init(SDP_function, my_connid) {
+
+  async function _init(SDP_function, my_connect_id) {
     serverProcess = SDP_function;
-    my_connection_id = my_connid;
+    my_connection_id = my_connect_id;
     eventProcess();
-    local_div = document.getElementById("locaVideoPlayer");
+    local_div = document.getElementById("localVideoPlayer");
   }
+
   function eventProcess() {
     $("#miceMuteUnmute").on("click", async function () {
       if (!audio) {
@@ -49,6 +64,7 @@ var AppProcess = (function () {
       }
       isAudioMute = !isAudioMute;
     });
+
     $("#videoCamOnOff").on("click", async function () {
       if (video_st == video_states.Camera) {
         await videoProcess(video_states.None);
@@ -65,13 +81,14 @@ var AppProcess = (function () {
       }
     });
   }
+
   async function loadAudio() {
     try {
-      var astream = await navigator.mediaDevices.getUserMedia({
+      var c_stream = await navigator.mediaDevices.getUserMedia({
         video: false,
         audio: true,
       });
-      audio = astream.getAudioTracks()[0];
+      audio = c_stream.getAudioTracks()[0];
       audio.enabled = false;
     } catch (e) {
       console.log(e);
@@ -90,6 +107,7 @@ var AppProcess = (function () {
       return false;
     }
   }
+
   async function updateMediaSenders(track, rtp_senders) {
     for (var con_id in peers_connection_ids) {
       if (connection_status(peers_connection[con_id])) {
@@ -101,6 +119,7 @@ var AppProcess = (function () {
       }
     }
   }
+
   function removeMediaSenders(rtp_senders) {
     console.log("rtp_senders :", rtp_senders);
     for (var con_id in peers_connection_ids) {
@@ -110,6 +129,7 @@ var AppProcess = (function () {
       }
     }
   }
+
   function removeVideoStream(rtp_vid_senders) {
     if (videoCamTrack) {
       videoCamTrack.stop();
@@ -118,6 +138,7 @@ var AppProcess = (function () {
       removeMediaSenders(rtp_vid_senders);
     }
   }
+
   async function videoProcess(newVideoState) {
     if (newVideoState == video_states.None) {
       $("#videoCamOnOff").html(
@@ -173,7 +194,7 @@ var AppProcess = (function () {
       if (vstream && vstream.getVideoTracks().length > 0) {
         videoCamTrack = vstream.getVideoTracks()[0];
         if (videoCamTrack) {
-          local_div.srcObject = new MediaStream([videoCamTrack]);
+          local_div.srcObject = new Medic_stream([videoCamTrack]);
           updateMediaSenders(videoCamTrack, rtp_vid_senders);
         }
       }
@@ -198,63 +219,51 @@ var AppProcess = (function () {
       );
     }
   }
-  var iceConfiguration = {
-    iceServers: [
-      {
-        urls: "stun:stun.l.google.com:19302",
-      },
-      {
-        urls: "turn:128.199.213.61:3478",
-        username: "shazeedul",
-        credential: "321456",
-      },
-    ],
-  };
 
-  async function setConnection(connid) {
+  async function setConnection(conn_id) {
     var connection = new RTCPeerConnection(iceConfiguration);
 
     connection.onnegotiationneeded = async function (event) {
-      await setOffer(connid);
+      await setOffer(conn_id);
     };
     connection.onicecandidate = function (event) {
       if (event.candidate) {
         serverProcess(
           JSON.stringify({ icecandidate: event.candidate }),
-          connid
+          conn_id
         );
       }
     };
     connection.ontrack = function (event) {
-      if (!remote_vid_stream[connid]) {
-        remote_vid_stream[connid] = new MediaStream();
+      if (!remote_vid_stream[conn_id]) {
+        remote_vid_stream[conn_id] = new Medic_stream();
       }
-      if (!remote_aud_stream[connid]) {
-        remote_aud_stream[connid] = new MediaStream();
+      if (!remote_aud_stream[conn_id]) {
+        remote_aud_stream[conn_id] = new Medic_stream();
       }
 
       if (event.track.kind == "video") {
-        remote_vid_stream[connid]
+        remote_vid_stream[conn_id]
           .getVideoTracks()
-          .forEach((t) => remote_vid_stream[connid].removeTrack(t));
-        remote_vid_stream[connid].addTrack(event.track);
-        var remoteVideoPlayer = document.getElementById("v_" + connid);
+          .forEach((t) => remote_vid_stream[conn_id].removeTrack(t));
+        remote_vid_stream[conn_id].addTrack(event.track);
+        var remoteVideoPlayer = document.getElementById("v_" + conn_id);
         remoteVideoPlayer.srcObject = null;
-        remoteVideoPlayer.srcObject = remote_vid_stream[connid];
+        remoteVideoPlayer.srcObject = remote_vid_stream[conn_id];
         remoteVideoPlayer.load();
       } else if (event.track.kind == "audio") {
-        remote_aud_stream[connid]
+        remote_aud_stream[conn_id]
           .getAudioTracks()
-          .forEach((t) => remote_aud_stream[connid].removeTrack(t));
-        remote_aud_stream[connid].addTrack(event.track);
-        var remoteAudioPlayer = document.getElementById("a_" + connid);
+          .forEach((t) => remote_aud_stream[conn_id].removeTrack(t));
+        remote_aud_stream[conn_id].addTrack(event.track);
+        var remoteAudioPlayer = document.getElementById("a_" + conn_id);
         remoteAudioPlayer.srcObject = null;
-        remoteAudioPlayer.srcObject = remote_aud_stream[connid];
+        remoteAudioPlayer.srcObject = remote_aud_stream[conn_id];
         remoteAudioPlayer.load();
       }
     };
-    peers_connection_ids[connid] = connid;
-    peers_connection[connid] = connection;
+    peers_connection_ids[conn_id] = conn_id;
+    peers_connection[conn_id] = connection;
 
     if (
       video_st == video_states.Camera ||
@@ -264,95 +273,103 @@ var AppProcess = (function () {
         updateMediaSenders(videoCamTrack, rtp_vid_senders);
       }
     }
-
     return connection;
   }
 
-  async function setOffer(connid) {
-    var connection = peers_connection[connid];
+  async function setOffer(conn_id) {
+    var connection = peers_connection[conn_id];
     var offer = await connection.createOffer();
     await connection.setLocalDescription(offer);
     serverProcess(
       JSON.stringify({
         offer: connection.localDescription,
       }),
-      connid
+      conn_id
     );
   }
-  async function SDPProcess(message, from_connid) {
+
+  async function SDPProcess(message, from_conn_id) {
     message = JSON.parse(message);
     if (message.answer) {
-      await peers_connection[from_connid].setRemoteDescription(
+      await peers_connection[from_conn_id].setRemoteDescription(
         new RTCSessionDescription(message.answer)
       );
     } else if (message.offer) {
-      if (!peers_connection[from_connid]) {
-        await setConnection(from_connid);
+      if (!peers_connection[from_conn_id]) {
+        await setConnection(from_conn_id);
       }
-      await peers_connection[from_connid].setRemoteDescription(
+      await peers_connection[from_conn_id].setRemoteDescription(
         new RTCSessionDescription(message.offer)
       );
-      var answer = await peers_connection[from_connid].createAnswer();
-      await peers_connection[from_connid].setLocalDescription(answer);
+      var answer = await peers_connection[from_conn_id].createAnswer();
+      await peers_connection[from_conn_id].setLocalDescription(answer);
       serverProcess(
         JSON.stringify({
           answer: answer,
         }),
-        from_connid
+        from_conn_id
       );
     } else if (message.icecandidate) {
-      if (!peers_connection[from_connid]) {
-        await setConnection(from_connid);
+      if (!peers_connection[from_conn_id]) {
+        await setConnection(from_conn_id);
       }
       try {
-        await peers_connection[from_connid].addIceCandidate(
+        await peers_connection[from_conn_id].addIceCandidate(
           message.icecandidate
         );
       } catch (e) {
         console.log(e);
       }
     } else if (message.Video_switch_off) {
-      document.querySelector("#v_" + from_connid + "").srcObject = null;
+      document.querySelector("#v_" + from_conn_id + "").srcObject = null;
     }
   }
-  async function closeConnection(connid) {
-    peers_connection_ids[connid] = null;
-    if (peers_connection[connid]) {
-      peers_connection[connid].close();
-      peers_connection[connid] = null;
+
+  async function closeConnection(conn_id) {
+    peers_connection_ids[conn_id] = null;
+    if (peers_connection[conn_id]) {
+      peers_connection[conn_id].close();
+      peers_connection[conn_id] = null;
     }
-    if (remote_aud_stream[connid]) {
-      remote_aud_stream[connid].getTracks().forEach((t) => {
+    if (remote_aud_stream[conn_id]) {
+      remote_aud_stream[conn_id].getTracks().forEach((t) => {
         if (t.stop) t.stop();
       });
-      remote_aud_stream[connid] = null;
+      remote_aud_stream[conn_id] = null;
     }
-    if (remote_vid_stream[connid]) {
-      remote_vid_stream[connid].getTracks().forEach((t) => {
+    if (remote_vid_stream[conn_id]) {
+      remote_vid_stream[conn_id].getTracks().forEach((t) => {
         if (t.stop) t.stop();
       });
-      remote_vid_stream[connid] = null;
+      remote_vid_stream[conn_id] = null;
     }
   }
+
   return {
-    setNewConnection: async function (connid) {
-      await setConnection(connid);
+    setNewConnection: async function (conn_id) {
+      await setConnection(conn_id);
     },
-    init: async function (SDP_function, my_connid) {
-      await _init(SDP_function, my_connid);
+
+    init: async function (SDP_function, my_connect_id) {
+      await _init(SDP_function, my_connect_id);
     },
-    processClientFunc: async function (data, from_connid) {
-      await SDPProcess(data, from_connid);
+
+    processClientFunc: async function (data, from_conn_id) {
+      await SDPProcess(data, from_conn_id);
     },
-    closeConnectionCall: async function (connid) {
-      await closeConnection(connid);
+
+    closeConnectionCall: async function (conn_id) {
+      await closeConnection(conn_id);
     },
   };
 })();
+
+/** ---------- My App ---------- */
 var MyApp = (function () {
-  var socket = null;
-  var user_id = "";
-  var meeting_id = "";
+  var socket = null,
+    user_id = "",
+    meeting_id = "";
+
   function init(uid, mid) {
     user_id = uid;
     meeting_id = mid;
@@ -360,18 +377,19 @@ var MyApp = (function () {
     $("#me h2").text(user_id + "(Me)");
     document.title = user_id;
     event_process_for_signaling_server();
-    eventHandeling();
+    eventHandling();
   }
 
   function event_process_for_signaling_server() {
     socket = io.connect();
 
-    var SDP_function = function (data, to_connid) {
+    var SDP_function = function (data, to_conn_id) {
       socket.emit("SDPProcess", {
         message: data,
-        to_connid: to_connid,
+        to_conn_id: to_conn_id,
       });
     };
+
     socket.on("connect", () => {
       if (socket.connected) {
         AppProcess.init(SDP_function, socket.id);
@@ -383,14 +401,15 @@ var MyApp = (function () {
         }
       }
     });
+
     socket.on("inform_other_about_disconnected_user", function (data) {
       $("#" + data.connId).remove();
       $(".participant-count").text(data.uNumber);
       $("#participant_" + data.connId + "").remove();
       AppProcess.closeConnectionCall(data.connId);
     });
-    // <!-- .....................HandRaise .................-->
 
+    /** -------------------HandRaise ------------------  */
     socket.on("HandRaise_info_for_others", function (data) {
       if (data.handRaise) {
         $("#hand_" + data.connId).show();
@@ -398,13 +417,14 @@ var MyApp = (function () {
         $("#hand_" + data.connId).hide();
       }
     });
-    // <!-- .....................HandRaise .................-->
+    /** -------------------HandRaise ------------------  */
 
     socket.on("inform_others_about_me", function (data) {
       addUser(data.other_user_id, data.connId, data.userNumber);
 
       AppProcess.setNewConnection(data.connId);
     });
+
     socket.on("showFileMessage", function (data) {
       var num_of_att = $(".left-align").length;
       var added_mar = num_of_att * 10;
@@ -417,6 +437,7 @@ var MyApp = (function () {
         minute: "numeric",
         hour12: true,
       });
+
       var attachFileAreaForOther = document.querySelector(".show-attach-file");
 
       attachFileAreaForOther.innerHTML +=
@@ -428,6 +449,7 @@ var MyApp = (function () {
         data.fileName +
         "</a></div></div><br/>";
     });
+
     socket.on("inform_me_about_other_user", function (other_users) {
       var userNumber = other_users.length;
       var userNumb = userNumber + 1;
@@ -442,9 +464,11 @@ var MyApp = (function () {
         }
       }
     });
+
     socket.on("SDPProcess", async function (data) {
-      await AppProcess.processClientFunc(data.message, data.from_connid);
+      await AppProcess.processClientFunc(data.message, data.from_conn_id);
     });
+
     socket.on("showChatMessage", function (data) {
       var time = new Date();
       var lTime = time.toLocaleString("en-US", {
@@ -463,8 +487,9 @@ var MyApp = (function () {
       $("#messages").append(div);
     });
   }
-  function eventHandeling() {
-    // <!-- ......................HandRaise ...............-->
+
+  function eventHandling() {
+    /** -------------------HandRaise ------------------  */
     var handRaise = false;
     $("#handRaiseAction").on("click", async function () {
       if (!handRaise) {
@@ -477,9 +502,10 @@ var MyApp = (function () {
         socket.emit("sendHandRaise", handRaise);
       }
     });
-    // <!-- ......................HandRaise ...............-->
-    $("#btnsend").on("click", function () {
-      var msgData = $("#msgbox").val();
+    /** -------------------HandRaise ------------------  */
+
+    $("#btnSend").on("click", function () {
+      var msgData = $("#msgBox").val();
       socket.emit("sendMessage", msgData);
       var time = new Date();
       var lTime = time.toLocaleString("en-US", {
@@ -496,7 +522,7 @@ var MyApp = (function () {
           msgData
       );
       $("#messages").append(div);
-      $("#msgbox").val("");
+      $("#msgBox").val("");
     });
 
     var url = window.location.href;
@@ -513,9 +539,9 @@ var MyApp = (function () {
     newDivId.find("h2").text(other_user_id);
     newDivId.find("video").attr("id", "v_" + connId);
     newDivId.find("audio").attr("id", "a_" + connId);
-    // <!-- .....................HandRaise .................-->
+    /** -------------------HandRaise ------------------  */
     newDivId.find("img").attr("id", "hand_" + connId);
-    // <!-- .....................HandRaise .................-->
+    /** -------------------HandRaise ------------------  */
     newDivId.show();
     $("#divUsers").append(newDivId);
     $(".in-call-wrap-up").append(
@@ -527,21 +553,25 @@ var MyApp = (function () {
     );
     $(".participant-count").text(userNum);
   }
+
   $(document).on("click", ".people-heading", function () {
     $(".in-call-wrap-up").show(300);
     $(".chat-show-wrap").hide(300);
     $(this).addClass("active");
     $(".chat-heading").removeClass("active");
   });
+
   $(document).on("click", ".chat-heading", function () {
     $(".in-call-wrap-up").hide(300);
     $(".chat-show-wrap").show(300);
     $(this).addClass("active");
     $(".people-heading").removeClass("active");
   });
+
   $(document).on("click", ".meeting-heading-cross", function () {
     $(".g-right-details-wrap").hide(300);
   });
+
   $(document).on("click", ".top-left-participant-wrap", function () {
     $(".people-heading").addClass("active");
     $(".chat-heading").removeClass("active");
@@ -549,6 +579,7 @@ var MyApp = (function () {
     $(".in-call-wrap-up").show(300);
     $(".chat-show-wrap").hide(300);
   });
+
   $(document).on("click", ".top-left-chat-wrap", function () {
     $(".people-heading").removeClass("active");
     $(".chat-heading").addClass("active");
@@ -556,6 +587,7 @@ var MyApp = (function () {
     $(".in-call-wrap-up").hide(300);
     $(".chat-show-wrap").show(300);
   });
+
   $(document).on("click", ".end-call-wrap", function () {
     $(".top-box-show")
       .css({
@@ -565,6 +597,7 @@ var MyApp = (function () {
         '<div class="top-box align-vertical-middle profile-dialogue-show"> <h4 class="mt-3" style="text-align:center;color:white;">Leave Meeting</h4> <hr> <div class="call-leave-cancel-action d-flex justify-content-center align-items-center w-100"> <a href="/action.html"><button class="call-leave-action btn btn-danger mr-5">Leave</button></a> <button class="call-cancel-action btn btn-secondary">Cancel</button> </div> </div>'
       );
   });
+
   $(document).mouseup(function (e) {
     var container = new Array();
     container.push($(".top-box-show"));
@@ -574,6 +607,7 @@ var MyApp = (function () {
       }
     });
   });
+
   $(document).mouseup(function (e) {
     var container = new Array();
     container.push($(".g-details"));
@@ -584,9 +618,11 @@ var MyApp = (function () {
       }
     });
   });
+
   $(document).on("click", ".call-cancel-action", function () {
     $(".top-box-show").html("");
   });
+
   $(document).on("click", ".copy_info", function () {
     var $temp = $("<input>");
     $("body").append($temp);
@@ -598,21 +634,25 @@ var MyApp = (function () {
       $(".link-conf").hide();
     }, 3000);
   });
+
   $(document).on("click", ".meeting-details-button", function () {
     $(".g-details").slideDown(300);
   });
+
   $(document).on("click", ".g-details-heading-attachment", function () {
     $(".g-details-heading-show").hide();
     $(".g-details-heading-show-attachment").show();
     $(this).addClass("active");
     $(".g-details-heading-detail").removeClass("active");
   });
+
   $(document).on("click", ".g-details-heading-detail", function () {
     $(".g-details-heading-show").show();
     $(".g-details-heading-show-attachment").hide();
     $(this).addClass("active");
     $(".g-details-heading-attachment").removeClass("active");
   });
+
   var base_url = window.location.origin;
 
   $(document).on("change", ".custom-file-input", function () {
@@ -624,12 +664,13 @@ var MyApp = (function () {
     e.preventDefault();
     var att_img = $("#customFile").prop("files")[0];
     var formData = new FormData();
-    formData.append("zipfile", att_img);
+    formData.append("zipFile", att_img);
     formData.append("meeting_id", meeting_id);
     formData.append("username", user_id);
     console.log(formData);
+
     $.ajax({
-      url: base_url + "/attachimg",
+      url: base_url + "/attaching",
       type: "POST",
       data: formData,
       contentType: false,
@@ -646,6 +687,7 @@ var MyApp = (function () {
     var attachFileName = $("#customFile").val().split("\\").pop();
     var attachFilePath =
       "public/attachment/" + meeting_id + "/" + attachFileName;
+
     attachFileArea.innerHTML +=
       "<div class='left-align' style='display:flex; align-items:center;'>" +
       "<img src='public/assets/images/other.jpg' style='height:40px;width:40px;' class='caller-image circle'>" +
@@ -661,6 +703,7 @@ var MyApp = (function () {
       "</a>" +
       "</div>" +
       "</div><br/>";
+
     $("label.custom-file-label").text("");
     socket.emit("fileTransferToOther", {
       username: user_id,
@@ -669,6 +712,7 @@ var MyApp = (function () {
       fileName: attachFileName,
     });
   });
+
   $(document).on("click", ".option-icon", function () {
     $(".recording-show").toggle(300);
   });
@@ -680,6 +724,7 @@ var MyApp = (function () {
       .text("Stop Recording");
     startRecording();
   });
+
   $(document).on("click", ".stop-record", function () {
     $(this)
       .removeClass()
@@ -688,38 +733,40 @@ var MyApp = (function () {
     mediaRecorder.stop();
   });
 
-  var mediaRecorder;
-  var chunks = [];
+  var mediaRecorder,
+    chunks = [];
+
   async function captureScreen(
-    mediaContraints = {
+    mediaContent = {
       video: true,
     }
   ) {
     const screenStream = await navigator.mediaDevices.getDisplayMedia(
-      mediaContraints
+      mediaContent
     );
     return screenStream;
   }
   async function captureAudio(
-    mediaContraints = {
+    mediaContent = {
       video: false,
       audio: true,
     }
   ) {
-    const audioStream = await navigator.mediaDevices.getUserMedia(
-      mediaContraints
-    );
+    const audioStream = await navigator.mediaDevices.getUserMedia(mediaContent);
     return audioStream;
   }
+
   async function startRecording() {
     const screenStream = await captureScreen();
     const audioStream = await captureAudio();
-    const stream = new MediaStream([
+
+    const stream = new Medic_stream([
       ...screenStream.getTracks(),
       ...audioStream.getTracks(),
     ]);
     mediaRecorder = new MediaRecorder(stream);
     mediaRecorder.start();
+
     mediaRecorder.onstop = function (e) {
       var clipName = prompt("Enter a name for your recording");
       stream.getTracks().forEach((track) => track.stop());
@@ -738,6 +785,7 @@ var MyApp = (function () {
         window.URL.revokeObjectURL(url);
       }, 100);
     };
+
     mediaRecorder.ondataavailable = function (e) {
       chunks.push(e.data);
     };

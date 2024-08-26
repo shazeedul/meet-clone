@@ -1,8 +1,8 @@
 const express = require("express");
 const path = require("path");
 var app = express();
-var server = app.listen(5000, function () {
-  console.log("Listening on port 5000");
+var server = app.listen(3000, function () {
+  console.log("Listening on port 3000");
 });
 const fs = require("fs");
 const fileUpload = require("express-fileupload");
@@ -115,23 +115,23 @@ io.on("connection", (socket) => {
 });
 
 app.use(fileUpload());
-app.post("/attaching", function (req, res) {
+app.post("/attachimg", function (req, res) {
   var data = req.body;
-  var imageFile = req.files.zipFile;
-  if (!imageFile) {
-    return res.status(400).send("No file was uploaded.");
-  }
+  var imageFile = req.files.zipfile;
+  console.log(imageFile);
   var dir = "public/attachment/" + data.meeting_id + "/";
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+    fs.mkdirSync(dir);
   }
 
-  imageFile.mv(dir + imageFile.name, function (error) {
-    if (error) {
-      console.error("Could not upload the image file, error: ", error);
-      return res.status(500).send("File upload failed.");
+  imageFile.mv(
+    "public/attachment/" + data.meeting_id + "/" + imageFile.name,
+    function (error) {
+      if (error) {
+        console.log("couldn't upload the image file , error: ", error);
+      } else {
+        console.log("Image file successfully uploaded");
+      }
     }
-    console.log("Image file successfully uploaded");
-    res.send("File uploaded successfully.");
-  });
+  );
 });

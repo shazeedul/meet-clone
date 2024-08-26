@@ -7,196 +7,15 @@
     <title>Create Or Join Meeting</title>
     <link rel="stylesheet" href="public/Assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="public/Assets/css/style.min.css">
-    <style>
-        /* General Body Styling */
-        body {
-            padding-top: 3.5rem;
-        }
+    <link rel="stylesheet" href="public/Assets/css/style.css">
 
-        /* Responsive Navbar */
-        .navbar {
-            padding: 0.5rem 1rem;
-        }
-
-        .navbar-brand {
-            font-size: 1.5rem;
-        }
-
-        .navbar-nav .nav-link {
-            font-size: 1rem;
-            padding: 0.5rem 1rem;
-        }
-
-        .navbar-nav .btn {
-            margin-right: 10px;
-        }
-
-        /* Jumbotron Styling */
-        .jumbotron {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: white;
-        }
-
-        .jumbotron h1 {
-            font-size: 2rem;
-            text-align: center;
-        }
-
-        .jumbotron p {
-            font-size: 1.25rem;
-            text-align: center;
-        }
-
-        .jumbotron .container {
-            width: 100%;
-            margin-bottom: 1.5rem;
-        }
-
-        /* Responsive Button Group */
-        .jumbotron ul {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0;
-            margin: 0;
-            list-style: none;
-        }
-
-        .jumbotron ul li {
-            width: 100%;
-            margin: 0.5rem 0;
-        }
-
-        .jumbotron ul li .btn {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .signin-image {
-            width: 100%;
-            max-width: 400px;
-            margin-top: 1rem;
-            border-radius: 5px;
-            box-shadow: 1px 1px 5px grey;
-        }
-
-        /* Footer Styling */
-        footer {
-            text-align: center;
-            margin-top: 2rem;
-        }
-
-        /* Media Queries for Responsiveness */
-        @media (min-width: 768px) {
-            .navbar-nav {
-                flex-direction: column; /* Stack the items vertically on mobile */
-                align-items: start;
-            }
-
-            .navbar-nav .nav-item {
-                width: 100%; /* Make the buttons take up the full width */
-            }
-
-            .navbar-nav .btn {
-                width: 100%; /* Make the buttons take up the full width */
-                margin-bottom: 10px; /* Adds space below each button */
-            }
-
-            .navbar-nav .btn:last-child {
-                margin-bottom: 0; /* Removes the margin from the last button */
-            }
-
-            .jumbotron {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .jumbotron h1 {
-                font-size: 3rem;
-                text-align: left;
-            }
-
-            .jumbotron p {
-                font-size: 1.25rem;
-                text-align: left;
-            }
-
-            .jumbotron ul {
-                flex-direction: row;
-                justify-content: flex-start;
-            }
-
-            .jumbotron ul li {
-                margin: 0 0.5rem;
-                width: auto;
-            }
-
-            .signin-image {
-                margin-top: 0;
-                margin-left: 2rem;
-            }
-        }
-
-        @media (max-width: 769px) {
-            .container-with-image {
-                display: none;
-            }
-
-            /* Responsive Navbar */
-            .navbar-brand {
-                font-size: 1rem;
-            }
-
-            .navbar-nav .nav-link {
-                font-size: 0.8rem;
-            }
-
-            .navbar-nav .nav-item {
-                margin-bottom: 10px;
-            }
-
-            .navbar-nav .btn:last-child {
-                margin-right: 0;
-            }
-
-            .navbar-nav .btn {
-                margin-right: 10px; /* Adds spacing to the right of each button */
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .jumbotron h1 {
-                font-size: 4rem;
-            }
-
-            .jumbotron p {
-                font-size: 1.5rem;
-            }
-
-            .signin-image {
-                max-width: 450px;
-            }
-        }
-    </style>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg fixed-top navbar-light bg-light">
-        <a href="#" class="navbar-brand">
-            <img src="public/Assets/images/google-meet-icon.png" class="logo" alt="Google Meet" height="40">
-            Google Meet
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ml-auto">
+<body style="padding-top: 3.5rem;">
+    <nav class="navbar navbar-expand-md fixed-top">
+        <img src="public/assets/images/google-meet-icon.png" class="logo" alt="">
+        <a href="#" class="navbar-brand text-dark">Google Meet</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
                     <a href="#" class="nav-link">At a glance</a>
                 </li>
@@ -207,13 +26,12 @@
                     <a href="#" class="nav-link">Plan and Price</a>
                 </li>
             </ul>
-            <ul class="navbar-nav">
-                <li class="nav-item">
+            <ul class="navbar-nav mr-0">
+                <li class="nav-item sign-in display-center">
                     <a href="#" class="nav-link">Sign in</a>
                 </li>
                 <li class="nav-item">
-                    <button class="btn btn-outline-secondary btn-lg text-info font-weight-bold join-meeting">Join the
-                        meeting</button>
+                    <button class="btn btn-outline-secondary btn-lg text-info font-weight-bold join-meeting" >Join the meeting</button>
                 </li>
                 <li class="nav-item">
                     <button class="btn btn-lg btn-info text-light font-weight-bold new-meeting">Start a meeting</button>
@@ -222,43 +40,29 @@
         </div>
     </nav>
     <main>
-        <div class="jumbotron">
-            <div class="container">
-                <h1>Premium video meeting. Now it is available for free to everyone.</h1>
-                <p>
-                    We're redesigning the Google Meet service for secure business meetings and making it free for everyone to
-                    use.
+        <div class="jumbotron h-100 d-flex">
+            <div class="container w-50">
+                <h1 style="font-size: 3rem;"> Premium video meeting. Now it is available for free to everyone. </h1>
+                <p style="font-size: 20px;">
+                    We're redesigning the Google Meet service for secure business meetings and making it free for everyone to use.
                 </p>
-                <ul>
-                    <li>
-                        <button class="btn btn-lg text-light font-weight-bold display-center new-meeting"
-                            style="background-color: #01796b;">
-                            <span class="material-icons mr-2">video_call</span>New Meeting
-                        </button>
+                <ul class="display-center justify-content-start" >
+                    <li style="padding: 0;">
+                        <button class="btn btn-lg text-light font-weight-bold display-center new-meeting" style="background-color: #01796b;"><span class="material-icons mr-2">video_call</span>New Meeting</button>
                     </li>
-                    <li>
-                        <button class="btn btn-lg btn-outline-secondary text-dark font-weight-bold display-center"
-                            style="background-color: #ffffff;">
-                            <span class="material-icons mr-2">keyboard</span>
-                            <input type="text" placeholder="Enter a code" style="border: none;" class="enter-code">
-                        </button>
+                    <li class="pl-3">
+                        <button class="btn btn-lg btn-outline-secondary text-dark font-weight-bold display-center" style="background-color: #ffffff;"><span class="material-icons mr-2">keyboard</span><input type="text" placeholder="Enter a code" style="border: none;" class="enter-code"></button>
                     </li>
                     <li class="text-dark font-weight-bold cursor-pointer pl-2 join-action">Join</li>
                 </ul>
             </div>
-            <div class="container d-flex justify-content-center align-items-center">
-                <img src="public/Assets/images/google-meet-people.jpg" alt="People in a video call" class="signin-image">
+            <div class="container w-50">
+                <img src="public/Assets/images/google-meet-people.jpg" alt="" class="signin-image">
             </div>
         </div>
     </main>
-    <footer class="container">
-        <h6>Learn more about <span class="learn-more text-info">Google Meet</span>.</h6>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
-        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="public/Assets/js/bootstrap.bundle.min.js"></script>
+    <footer class="container"><h6>Learn more about <span class="learn-more text-info">google meet</span> .</h6></footer>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(function(){
             $(document).on("click", ".join-meeting", function(){
@@ -274,6 +78,7 @@
                 var meetingUrl = window.location.origin+"?meetingID="+eight_d_value;
                 window.location.replace(meetingUrl);
             })
+
         })
     </script>
 </body>
